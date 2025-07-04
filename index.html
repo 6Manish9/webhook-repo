@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Webhook Events</title>
+</head>
+<body>
+  <h2>Recent GitHub Events</h2>
+  <ul id="events"></ul>
+
+  <script>
+    async function fetchEvents() {
+      const response = await fetch('http://localhost:5000/events'); // Use ngrok URL if testing online
+      const data = await response.json();
+
+      const ul = document.getElementById('events');
+      ul.innerHTML = '';
+
+      data.forEach(event => {
+        let msg = '';
+        const time = new Date(event.timestamp).toUTCString();
+        if (event.action === 'push') {
+          msg = `${event.author} pushed to ${event.to_branch} on ${time}`;
+        } else if (event.action === 'pull_request') {
+          msg = `${event.author} submitted a pull request from ${event.from_branch} to ${event.to_branch} on ${time}`;
+        } else if (event.action === 'merge') {
+          msg = `${event.author} merged branch ${event.from_branch} to ${event.to_branch} on ${time}`;
+        }
+
+        const li = document.createElement('li');
+        li.textContent = msg;
+        ul.appendChild(li);
+      });
+    }
+
+    fetchEvents(); // initial call
+    setInterval(fetchEvents, 15000); // refresh every 15 seconds
+  </script>
+</body>
+</html>
